@@ -1,12 +1,14 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 from __future__ import print_function
 
+import sys
 import json
 import os
 from urllib.parse import urlencode
 
 import astropy.units as u
 import numpy as np
+import pkg_resources
 import pytest
 import requests
 from astropy.coordinates import SkyCoord
@@ -22,7 +24,8 @@ from ..core import (
     conf,
 )
 
-TEST_DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+MAIN_DATA = pkg_resources.resource_filename("astroquery.nasa_exoplanet_archive", "data")
+TEST_DATA = pkg_resources.resource_filename(__name__, "data")
 RESPONSE_FILE = os.path.join(TEST_DATA, "responses.json")
 ALL_TABLES = [
     ("exoplanets", dict(where="pl_hostname='Kepler-11'")),
@@ -59,7 +62,13 @@ ALL_TABLES = [
     ("k2names", dict(where="epic_host='EPIC 206027655'")),
     ("missionstars", dict(where="star_name='tau Cet'")),
     ("mission_exocat", dict(where="star_name='HIP 5110 A'")),
-    # ("toi", dict(where="toi=256.01")),
+    pytest.param(
+        "toi",
+        dict(where="toi=256.01"),
+        marks=pytest.markskipif(
+            sys.platform.startswith("win"), reason="TOI table cannot be loaded on Windows"
+        ),
+    ),
 ]
 
 
@@ -87,8 +96,7 @@ def mock_get(self, method, url, *args, **kwargs):  # pragma: nocover
     # remote request if necessary. Otherwise we throw a ValueError.
     if index < 0:
         if "NASA_EXOPLANET_ARCHIVE_GENERATE_RESPONSES" not in os.environ:
-            print(responses.get(table, []))
-            raise ValueError("unexpected request: {0}".format(key))
+            raise ValueError("unexpected request")
         with requests.Session() as session:
             resp = session.old_request(method, url, params=params)
         responses[table] = responses.get(table, [])
@@ -116,17 +124,6 @@ def patch_get(request):  # pragma: nocover
     requests.Session.old_request = requests.Session.request
     mp.setattr(requests.Session, "request", mock_get)
     return mp
-
-
-@pytest.mark.filterwarnings("error")
-@pytest.mark.parametrize("table,query", ALL_TABLES)
-def test_all_tables(patch_get, table, query):
-    data = NasaExoplanetArchive.query_criteria(table, select="*", **query)
-    assert len(data) > 0
-
-    # Check that the units were fixed properly
-    for col in data.columns:
-        assert isinstance(data[col], SkyCoord) or not isinstance(data[col].unit, u.UnrecognizedUnit)
 
 
 def test_regularize_object_name(patch_get):
@@ -188,6 +185,17 @@ def test_query_object_compat(patch_get):
         table1 = NasaExoplanetArchive.query_star(" Kepler 2")
     table2 = NasaExoplanetArchive.query_object("HAT-P-7 ")
     _compare_tables(table1, table2)
+
+
+@pytest.mark.filterwarnings("error")
+@pytest.mark.parametrize("table,query", ALL_TABLES)
+def test_all_tables(patch_get, table, query):
+    data = NasaExoplanetArchive.query_criteria(table, units=True, select="*", **query)
+    assert len(data) > 0
+
+    # Check that the units were fixed properly
+    for col in data.columns:
+        assert isinstance(data[col], SkyCoord) or not isinstance(data[col].unit, u.UnrecognizedUnit)
 
 
 def test_select(patch_get):
