@@ -190,7 +190,7 @@ def test_query_object_compat(patch_get):
 @pytest.mark.filterwarnings("error")
 @pytest.mark.parametrize("table,query", ALL_TABLES)
 def test_all_tables(patch_get, table, query):
-    data = NasaExoplanetArchive.query_criteria(table, units=True, select="*", **query)
+    data = NasaExoplanetArchive.query_criteria(table, select="*", **query)
     assert len(data) > 0
 
     # Check that the units were fixed properly
