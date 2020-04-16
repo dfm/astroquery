@@ -1,7 +1,6 @@
 # Licensed under a 3-clause BSD style license - see LICENSE.rst
 from __future__ import print_function
 
-import base64
 import json
 import os
 from urllib.parse import urlencode
@@ -90,7 +89,8 @@ def mock_get(self, method, url, *args, **kwargs):  # pragma: nocover
     # remote request if necessary. Otherwise we throw a ValueError.
     if index < 0:
         if "NASA_EXOPLANET_ARCHIVE_GENERATE_RESPONSES" not in os.environ:
-            raise ValueError("unexpected request")
+            print(responses.get(table, []))
+            raise ValueError("unexpected request: {0}".format(key))
         with requests.Session() as session:
             resp = session.old_request(method, url, params=params)
         responses[table] = responses.get(table, [])
@@ -184,7 +184,7 @@ def test_query_object_compat(patch_get):
 @pytest.mark.filterwarnings("error")
 @pytest.mark.parametrize("table,query", ALL_TABLES)
 def test_all_tables(patch_get, table, query):
-    data = NasaExoplanetArchive.query_criteria(table, units=True, select="*", **query)
+    data = NasaExoplanetArchive.query_criteria(table, select="*", **query)
     assert len(data) > 0
 
     # Check that the units were fixed properly
