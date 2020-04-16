@@ -7,7 +7,6 @@ from urllib.parse import urlencode
 
 import astropy.units as u
 import numpy as np
-import pkg_resources
 import pytest
 import requests
 from astropy.coordinates import SkyCoord
@@ -23,8 +22,7 @@ from ..core import (
     conf,
 )
 
-MAIN_DATA = pkg_resources.resource_filename("astroquery.nasa_exoplanet_archive", "data")
-TEST_DATA = pkg_resources.resource_filename(__name__, "data")
+TEST_DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 RESPONSE_FILE = os.path.join(TEST_DATA, "responses.json")
 ALL_TABLES = [
     ("exoplanets", dict(where="pl_hostname='Kepler-11'")),

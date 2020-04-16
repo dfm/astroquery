@@ -7,7 +7,7 @@ import os
 def get_package_data():
     return {
         "astroquery.nasa_exoplanet_archive.tests": [
-            os.path.join("data", "*.csv"),
+            os.path.join("data", "*.json"),
             os.path.join("data", "*.txt"),
         ]
     }
