@@ -127,7 +127,7 @@ jobs:
     - os: windows
       name: Windows test
       stage: Windows test
-      env: PYTHON_VERSION=3.7 SETUP_CMD='test -v -s'
+      env: PYTHON_VERSION=3.7 SETUP_CMD='test'
 
     # - stage: Deploy
     #   git:
