@@ -59,7 +59,7 @@ ALL_TABLES = [
     ("k2names", dict(where="epic_host='EPIC 206027655'")),
     ("missionstars", dict(where="star_name='tau Cet'")),
     ("mission_exocat", dict(where="star_name='HIP 5110 A'")),
-    ("toi", dict(where="toi=256.01")),
+    # ("toi", dict(where="toi=256.01")),
 ]
 
 
@@ -190,7 +190,6 @@ def test_query_object_compat(patch_get):
     _compare_tables(table1, table2)
 
 
-@pytest.mark.skip(reason="windows?")
 def test_select(patch_get):
     payload = NasaExoplanetArchive.query_criteria(
         "exoplanets",
