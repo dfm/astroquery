@@ -65,7 +65,7 @@ ALL_TABLES = [
     pytest.param(
         "toi",
         dict(where="toi=256.01"),
-        marks=pytest.markskipif(
+        marks=pytest.mark.skipif(
             sys.platform.startswith("win"), reason="TOI table cannot be loaded on Windows"
         ),
     ),
